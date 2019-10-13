@@ -59,15 +59,13 @@ class ReferenceDigitsReader(OCRReader):
         super(ref_path);
         self.digit_to_region = {};
     
-    def process_image(self):
+    def process_reference_image(self):
         self.convert_image_to_gray();
-        self.threshold_image();    
-        
-    def process_contours(self):
-        self.set_contours();
-        self.sort_contours();
+        self.threshold_image();
+	self.set_contours();
+	self.sort_contours();	
     
-    def create_bounding_boxes(self):
+    def scan_reference_image(self):
         for (digit, contour) in enumerate(self.contours):
             region = self.bound_box(contour);
             self.digit_to_region[digit] = region;
@@ -87,7 +85,7 @@ class ReferenceDigitsReader(OCRReader):
 class CardReader(OCRReader):
     def __init__(self, card_path):
         super(card_path);
-        self.digits_to_locs = {};
+        self.digits_to_locs = [];
     
     def create_rectangle_kernel():
         self.rectangle_kernel = cv2.getStructuringELement(cv2.MORPH_RECT, (9, 3));
@@ -105,25 +103,27 @@ class CardReader(OCRReader):
     def resize_image(ref):
         self.image = imutils.resize(self.image, CARD_WIDTH);
         
-    def process_image(self):
+    def process_card_image(self):
         self.resize_image();
-        self.threshold_image();
+	self.convert_image_to_grayscale();
+	self.gray = self.image;
+	self.set_gradient();
+	self.threshold_image();
+	self.set_contours();	
+	
+    def scan_card_image(self):
+	self.get_digits();
+	self.digits_to_locs = sorted(self.digits_to_locs, key=lambda x:x[0]);
     
-    def find_digits(self):
-        self.set_gradient();
-        self.threshold_image();
-        self.set_contours();
+    def get_output(self):
+	output = [];
     
-    def create_bounding_boxes(self):
-        for (index, contour) in enumerate(self.image):
-            create_bounding_box(contour);
-    
-    
-    def create_bounding_box(self, contour):
-	(x, y, w, h) = cv2.boundingRect(c)
-	aspect_ratio = w / float(h);     
-        if (aspect_ratio_compatible(aspect_ratio) and height_width_compatible(w,  h)):
-	    self.digits_to_locks.append((x, y, w, h));
+    def get_digits(self, contour):
+	for (index, contour) in enumerate(self.image):
+	    (x, y, w, h) = cv2.boundingRect(c)
+	    aspect_ratio = w / float(h);     
+	    if (aspect_ratio_compatible(aspect_ratio) and height_width_compatible(w,  h)):
+		self.digits_to_locs.append((x, y, w, h));	    
 	   
     def height_width_compatible(self, width, height):
 	height_okay = height < MAX_BLOCK_HEIGHT and height > MIN_BLOCK_HEIGHT;
