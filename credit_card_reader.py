@@ -85,7 +85,7 @@ class ReferenceDigitsReader(OCRReader):
 class CardReader(OCRReader):
     def __init__(self, card_path):
         super(card_path);
-        self.digits_to_locs = [];
+        self.groups = [];
     
     def create_rectangle_kernel():
         self.rectangle_kernel = cv2.getStructuringELement(cv2.MORPH_RECT, (9, 3));
@@ -113,18 +113,24 @@ class CardReader(OCRReader):
 	
     def scan_card_image(self):
 	self.get_digits();
-	self.digits_to_locs = sorted(self.digits_to_locs, key=lambda x:x[0]);
+	
     
     def get_output(self):
 	output = [];
-    
+	for (i, (gX, gY, gW, gH)) in enumerate(self.digits_to_locs):
+	    group = [];
+	    self.extract_group();
+    def extract_group():
+	
+	
     def get_digits(self, contour):
 	for (index, contour) in enumerate(self.image):
 	    (x, y, w, h) = cv2.boundingRect(c)
 	    aspect_ratio = w / float(h);     
 	    if (aspect_ratio_compatible(aspect_ratio) and height_width_compatible(w,  h)):
-		self.digits_to_locs.append((x, y, w, h));	    
-	   
+		self.groups.append((x, y, w, h));	    
+	self.groups = sorted(self.self.groups, key=lambda x:x[0]);
+	
     def height_width_compatible(self, width, height):
 	height_okay = height < MAX_BLOCK_HEIGHT and height > MIN_BLOCK_HEIGHT;
 	width_okay = width < MAX_BLOCK_WIDTH and width > MAX_BLOCK_WIDTH;
